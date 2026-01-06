@@ -1,24 +1,39 @@
 import Link from "next/link"
-import { ShoppingCart, User, Menu } from "lucide-react"
+import { ShoppingCart, User, Menu, Search, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/server"
+import { signout } from "@/app/actions"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
-export function Navbar() {
+export async function Navbar() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
     return (
-        <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
             <div className="container mx-auto flex h-16 items-center px-4">
                 <div className="mr-8 hidden md:flex">
                     <Link href="/" className="mr-6 flex items-center space-x-2">
-                        <span className="hidden font-bold sm:inline-block">Ramon</span>
+                        <span className="font-extrabold text-2xl tracking-tighter bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                            Ramon
+                        </span>
                     </Link>
                     <nav className="flex items-center space-x-6 text-sm font-medium">
-                        <Link href="/shop" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                        <Link href="/shop" className="transition-colors hover:text-primary text-foreground/80">
                             Shop
                         </Link>
-                        <Link href="/about" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                        <Link href="/about" className="transition-colors hover:text-primary text-foreground/80">
                             About
                         </Link>
-                        <Link href="/contact" className="transition-colors hover:text-foreground/80 text-foreground/60">
-                            Contact
+                        <Link href="/contact" className="transition-colors hover:text-primary text-foreground/80">
+                            Help
                         </Link>
                     </nav>
                 </div>
@@ -28,23 +43,55 @@ export function Navbar() {
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Toggle Menu</span>
                 </Button>
+
                 <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
                     <div className="w-full flex-1 md:w-auto md:flex-none">
-                        {/* Search Placeholder */}
+                        {/* Placeholder for Search */}
                     </div>
                     <nav className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" asChild>
+                        <Button variant="ghost" size="icon" className="hover:text-primary">
+                            <Search className="h-5 w-5" />
+                            <span className="sr-only">Search</span>
+                        </Button>
+                        <Button variant="ghost" size="icon" asChild className="hover:text-primary">
                             <Link href="/cart">
                                 <ShoppingCart className="h-5 w-5" />
                                 <span className="sr-only">Cart</span>
                             </Link>
                         </Button>
-                        <Button variant="ghost" size="icon" asChild>
-                            <Link href="/login">
-                                <User className="h-5 w-5" />
-                                <span className="sr-only">Account</span>
-                            </Link>
-                        </Button>
+
+                        {user ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="hover:text-primary">
+                                        <User className="h-5 w-5" />
+                                        <span className="sr-only">Account</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="cursor-pointer">Orders</DropdownMenuItem>
+                                    <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem>
+                                        <form action={signout} className="w-full">
+                                            <button type="submit" className="flex w-full items-center text-red-500">
+                                                <LogOut className="mr-2 h-4 w-4" />
+                                                <span>Log out</span>
+                                            </button>
+                                        </form>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <Button variant="ghost" size="icon" asChild className="hover:text-primary">
+                                <Link href="/login">
+                                    <User className="h-5 w-5" />
+                                    <span className="sr-only">Sign In</span>
+                                </Link>
+                            </Button>
+                        )}
                     </nav>
                 </div>
             </div>
