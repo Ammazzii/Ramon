@@ -1,16 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
-export interface Product {
-    id: string
-    name: string
-    description: string | null
-    price: number
-    image?: string
-    images?: string
-    category?: string
-}
+import { Product } from "@/types"
 
 interface ProductCardProps {
     product: Product

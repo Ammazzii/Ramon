@@ -2,40 +2,21 @@ import Link from "next/link"
 import { ArrowRight, Zap, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/product/product-card"
+import { createClient } from "@/lib/supabase/server"
+import { Product } from "@/types"
 
-// Mock data for Phase 1 - Foundation
-const FEATURED_PRODUCTS = [
-  {
-    id: "1",
-    name: "AirPods Pro Gen 2",
-    description: "Active Noise Cancellation",
-    price: 399,
-    image: "/images/airpods-placeholder.jpg",
-  },
-  {
-    id: "2",
-    name: "Dior Sauvage Elixir",
-    description: "60ml Concentrated Perfume",
-    price: 240,
-    image: "/images/cologne-placeholder.jpg",
-  },
-  {
-    id: "3",
-    name: "Sony WH-1000XM5",
-    description: "Industry Leading Noise Canceling",
-    price: 549,
-    image: "/images/sony-placeholder.jpg",
-  },
-  {
-    id: "4",
-    name: "Bleu de Chanel",
-    description: "Parfum Spray 100ml",
-    price: 260,
-    image: "/images/chanel-placeholder.jpg",
-  }
-]
+export const dynamic = 'force-dynamic'
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient()
+
+  // Fetch 4 newest products
+  const { data: products } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(4)
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -101,13 +82,18 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURED_PRODUCTS.map((product) => (
-              // @ts-ignore - Temporary ignore until we fix the ProductCard type
-              <ProductCard key={product.id} product={product} />
+            {products && products.map((product) => (
+              <ProductCard key={product.id} product={product as Product} />
             ))}
+            {(!products || products.length === 0) && (
+              <p className="col-span-4 text-center text-muted-foreground">
+                No products found. Please seed the database.
+              </p>
+            )}
           </div>
         </div>
       </section>
     </div>
   )
 }
+
